@@ -35,6 +35,69 @@ app.post('/db/messagesFromUntil', (req, res) => {
   });
 })
 
+app.post('/db/addSentiment', (req, res) => {
+  const sql = `SELECT * FROM chat_message_join cmj INNER JOIN message ON message.ROWID = cmj.message_id WHERE cmj.chat_id = ?`;
+  const params = [ req.body.id ]
+  Database.query(sql, params, (rows) => {
+    let texts = [];
+    for(let row in rows) {
+      texts.push(rows[row].text);
+    }
+    return res.send(texts);
+  });
+})
+
+app.get('/db/getAllMessagesFrom/:id', (req, res) => {
+  const sql = `SELECT * FROM chat_message_join cmj INNER JOIN message ON message.ROWID = cmj.message_id WHERE cmj.chat_id = ?`;
+  const params = [ req.params.id ]
+  Database.query(sql, params, (rows) => {
+    let texts = [];
+    for(let row in rows) {
+      texts.push(rows[row].text);
+    }
+    return res.send(texts);
+  });
+})
+
+app.get('/db/getAllMessagesFromV2/:id', (req, res) => {
+  const sql = `SELECT chat_message_join.chat_id, chat_message_join.message_id, message.text, message.ROWID, message.date, message.date_read, message.date_delivered FROM chat_message_join INNER JOIN message ON message.ROWID = chat_message_join.message_id WHERE chat_message_join.chat_id = ?`;
+  const params = [ req.params.id ]
+  Database.query(sql, params, (rows) => {
+    console.log(rows);
+    let texts = [];
+    for(let row in rows) {
+      texts.push(rows[row].text);
+    }
+    return res.send(texts);
+  });
+})
+
+app.post('/db/generateMessageTable', (req, res) => {
+  const sql = `CREATE TABLE amanda AS SELECT chat_message_join.chat_id, chat_message_join.message_id, message.text, message.ROWID, message.date, message.date_read, message.date_delivered FROM chat_message_join INNER JOIN message ON message.ROWID = chat_message_join.message_id WHERE chat_message_join.chat_id = ?`;
+  const params = [ req.params.id ]
+  Database.query(sql, params, (rows) => {
+    console.log(rows);
+  });
+})
+
+app.get('/db/populateMessageTable/:id', (req, res) => {
+  const sql = `SELECT chat_message_join.chat_id, chat_message_join.message_id, message.text, message.ROWID, message.date, message.date_read, message.date_delivered FROM chat_message_join INNER JOIN message ON message.ROWID = chat_message_join.message_id WHERE chat_message_join.chat_id = ?`;
+  const params = [ req.params.id ]
+  Database.query(sql, params, (rows) => {
+    console.log(rows);
+    let texts = [];
+    for(let row in rows) {
+      const sql2 = `INSERT INTO amanda(chat_id, message_id, text, ROWID, date, date_read, date_delivered) VALUES(?, ?, ?, ?, ?, ?, ?)`;
+      const params2 = [ rows[row].chat_id, rows[row].message_id, rows[row].text, rows[row].ROWID, rows[row].date, rows[row].date_read, rows[row].date_delivered ]
+      Database.query(sql2, params2, (rows2) => {
+        console.log(rows2);
+      });
+      texts.push(rows[row].text);
+    }
+    return res.send(texts);
+  });
+})
+
 app.get('/db/getAllSenders', (req, res) => {
   let sql = `SELECT * FROM message LIMIT 10`;
   Database.query(sql, (rows) => {

@@ -7,7 +7,6 @@ export const query = (sql, params, res) => {
     if (err) {
       return console.error(err.message);
     }
-    console.log('Connected to the chat database.');
   });
   return database.all(sql, params, (err, rows) => {
     if(err) {
